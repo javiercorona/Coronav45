@@ -1,0 +1,8 @@
+\[
+\boxed{
+\mathbb{A}_{\mu\nu} = \underbrace{\mathcal{G}_{\mu\nu}[\mathbb{A}]}_{\substack{\text{Base Gravity} \\ \text{(v13 core)}}} 
++ \underbrace{\sum_{k=1}^N \lambda_k \mathcal{Q}^{(k)}_{\mu\nu}[\mathbb{A}]}_{\substack{\text{Corrections} \\ \text{(Strings, Quantum, etc.)}}} 
++ \underbrace{\varointclockwise \frac{\delta \mathbb{A}}{\delta g} \star dg}_{\substack{\text{Meta-Dynamics} \\ \text{(Self-Learning Spacetime)}}} 
+= \kappa \mathcal{T}_{\mu\nu}^{(\text{total})}
+}
+\]  
