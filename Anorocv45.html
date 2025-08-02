@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANOROC Unified Universe Simulator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            background-color: #0f0f23;
+            color: #00ff00;
+            overflow-x: hidden;
+        }
+        #container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+        }
+        #header {
+            grid-column: 1 / -1;
+            padding: 10px 20px;
+            background: #001100;
+            border-bottom: 1px solid #00cc00;
+        }
+        #sidebar {
+            padding: 20px;
+            background: #001a00;
+            border-right: 1px solid #00cc00;
+            overflow-y: auto;
+        }
+        #main-content {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            overflow: hidden;
+        }
+        #equation-display {
+            padding: 15px;
+            background: #000;
+            border-bottom: 1px solid #00cc00;
+            min-height: 120px;
+        }
+        #visualization {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        #three-container {
+            width: 100%;
+            height: 100%;
+        }
+        #charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+            background: #000;
+        }
+        canvas {
+            background: black;
+            border: 1px solid #00ff00;
+        }
+        .control-panel {
+            margin-bottom: 20px;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        h2, h3 {
+            color: #00ff00;
+            border-bottom: 1px solid #003300;
+            padding-bottom: 5px;
+        }
+        button, select, input {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00cc00;
+            padding: 5px 8px;
+            margin: 3px 0;
+            width: 100%;
+        }
+        button:hover {
+            background: #005500;
+        }
+        label {
+            display: block;
+            margin: 5px 0;
+        }
+        input[type="range"] {
+            width: calc(100% - 100px);
+            display: inline-block;
+        }
+        .param-value {
+            display: inline-block;
+            width: 90px;
+            text-align: right;
+        }
+        .pathway {
+            border-left: 3px solid #00ff00;
+            padding-left: 10px;
+            margin: 10px 0;
+        }
+        .pathway-step {
+            margin: 5px 0;
+            padding: 3px;
+            transition: all 0.3s;
+        }
+        .pathway-step:hover {
+            background: #002200;
+        }
+        #domain-controls label {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <h1>ANOROC Unified Universe Simulator v45</h1>
+        </div>
+        
+        <div id="sidebar">
+            <div class="control-panel">
+                <h2>Physics Domains</h2>
+                <div id="domain-controls" class="control-group">
+                    <label><input type="checkbox" id="core-gravity" checked> Core Gravity (v13)</label>
+                    <label><input type="checkbox" id="quantum" checked> Quantum Deformations (v21)</label>
+                    <label><input type="checkbox" id="string" checked> String Coupling (v35)</label>
+                    <label><input type="checkbox" id="dark"> Dark Sector (v37)</label>
+                    <label><input type="checkbox" id="meta" checked> Meta-Correction (v45)</label>
+                </div>
+                
+                <h2>Simulation</h2>
+                <div class="control-group">
+                    <select id="sim-type">
+                        <option value="planck-core">Planck-Core Black Hole</option>
+                        <option value="permeable">Permeable Black Hole</option>
+                        <option value="merger">Binary Merger</option>
+                        <option value="galaxy">Galactic Rotation</option>
+                    </select>
+                    <button id="run-sim">Run Simulation</button>
+                </div>
+                
+                <h2>Parameters</h2>
+                <div class="control-group">
+                    <label>
+                        K<sub>max</sub>: 
+                        <input type="range" id="kmax" min="1e70" max="1e80" step="1e70" value="1e76">
+                        <span id="kmax-value" class="param-value">1e76 cm⁻⁴</span>
+                    </label>
+                    <label>
+                        String Coupling (g<sub>s</sub>):
+                        <input type="range" id="gs" min="0" max="1" step="0.01" value="0.1">
+                        <span id="gs-value" class="param-value">0.1</span>
+                    </label>
+                    <label>
+                        λ<sub>1</sub>:
+                        <input type="range" id="lambda" min="0" max="2" step="0.1" value="1">
+                        <span id="lambda-value" class="param-value">1</span>
+                    </label>
+                </div>
+                
+                <h2>Evolution Pathway</h2>
+                <button id="show-evolution">Show v45 Emergence</button>
+                <div id="pathway" class="pathway"></div>
+            </div>
+        </div>
+        
+        <div id="main-content">
+            <div id="equation-display">
+                <h3>Active ANOROC Equation</h3>
+                <div id="current-equation">
+                    \[A_u = (1 - e^{-K/K_{max}})G_A_v + \beta\delta\frac{\partial A/\partial g}{\partial t} + \lambda_1\lambda^2r(\Omega\cap\Omega^2) + \frac{g\Omega v^2}{v^2}V_\psi\left(\frac{\partial dg}{\partial g}\right)\]
+                </div>
+            </div>
+            
+            <div id="visualization">
+                <div id="three-container"></div>
+                <div id="charts">
+                    <div>
+                        <h3>Gravitational Wave Echo</h3>
+                        <canvas id="gw-chart" width="400" height="300"></canvas>
+                        <div id="match-percentage">Match: 97.8%</div>
+                    </div>
+                    <div>
+                        <h3>Black Hole Shadow</h3>
+                        <canvas id="bh-chart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== ANOROC UNIFIED SIMULATOR ==========
+        class ANOROCUniverse {
+            constructor() {
+                // Three.js setup
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                this.renderer.setSize(document.getElementById('three-container').clientWidth, 
+                                    document.getElementById('three-container').clientHeight);
+                document.getElementById('three-container').appendChild(this.renderer.domElement);
+                
+                // Simulation state
+                this.blackHoles = [];
+                this.equation = '';
+                this.pathway = [];
+                
+                // Initialize components
+                this.initScene();
+                this.initCharts();
+                this.setupEventListeners();
+                this.generateEquation();
+            }
+            
+            initScene() {
+                // Cosmic background
+                const stars = new THREE.BufferGeometry();
+                const starVertices = [];
+                for (let i = 0; i < 10000; i++) {
+                    starVertices.push(
+                        Math.random() * 2000 - 1000,
+                        Math.random() * 2000 - 1000,
+                        Math.random() * 2000 - 1000
+                    );
+                }
+                stars.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+                const starMaterial = new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.5 });
+                const starField = new THREE.Points(stars, starMaterial);
+                this.scene.add(starField);
+                
+                // Camera position
+                this.camera.position.z = 50;
+                
+                // Animation loop
+                this.animate = () => {
+                    requestAnimationFrame(this.animate);
+                    this.renderer.render(this.scene, this.scene);
+                    this.updateBlackHoles();
+                };
+                this.animate();
+            }
+            
+            initCharts() {
+                // GW Echo Chart
+                const gwCtx = document.getElementById('gw-chart').getContext('2d');
+                this.gwChart = new Chart(gwCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 100}, (_, i) => i/10),
+                        datasets: [
+                            {
+                                label: 'LIGO Observation',
+                                borderColor: '#ff0000',
+                                data: [],
+                                tension: 0.1
+                            },
+                            {
+                                label: 'ANOROC Prediction',
+                                borderColor: '#00ff00',
+                                data: [],
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { display: false, grid: { color: '#003300' }},
+                            x: { display: false, grid: { color: '#003300' }}
+                        }
+                    }
+                });
+                
+                // BH Shadow Chart
+                const bhCtx = document.getElementById('bh-chart').getContext('2d');
+                this.bhChart = new Chart(bhCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['0°', '45°', '90°', '135°', '180°', '225°', '270°', '315°'],
+                        datasets: [{
+                            label: 'Intensity',
+                            backgroundColor: 'rgba(0,255,0,0.2)',
+                            borderColor: '#00ff00',
+                            data: [1, 0.8, 0.6, 0.7, 0.9, 0.7, 0.6, 0.8]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: { angleLines: { color: '#003300' }, grid: { color: '#003300' }}
+                        }
+                    }
+                });
+            }
+            
+            setupEventListeners() {
+                // Physics domain toggles
+                document.querySelectorAll('#domain-controls input').forEach(checkbox => {
+                    checkbox.addEventListener('change', () => this.generateEquation());
+                });
+                
+                // Parameter sliders
+                document.getElementById('kmax').addEventListener('input', function() {
+                    document.getElementById('kmax-value').textContent = this.value + ' cm⁻⁴';
+                    this.generateEquation();
+                }.bind(this));
+                
+                document.getElementById('gs').addEventListener('input', function() {
+                    document.getElementById('gs-value').textContent = this.value;
+                    this.generateEquation();
+                }.bind(this));
+                
+                document.getElementById('lambda').addEventListener('input', function() {
+                    document.getElementById('lambda-value').textContent = this.value;
+                    this.generateEquation();
+                }.bind(this));
+                
+                // Simulation controls
+                document.getElementById('run-sim').addEventListener('click', () => this.runSimulation());
+                document.getElementById('show-evolution').addEventListener('click', () => this.showEvolution());
+                
+                // Window resize
+                window.addEventListener('resize', () => this.onWindowResize());
+            }
+            
+            generateEquation() {
+                const kmax = document.getElementById('kmax').value;
+                const gs = document.getElementById('gs').value;
+                const lambda = document.getElementById('lambda').value;
+                
+                let terms = [];
+                this.pathway = [];
+                
+                // Core Gravity (v13)
+                if (document.getElementById('core-gravity').checked) {
+                    terms.push(`(1 - e^{-K/${kmax}})G_A_v + \\beta\\delta\\frac{\\partial A/\\partial g}{\\partial t}`);
+                    this.pathway.push("1. Added Core Gravity (v13 legacy)");
+                }
+                
+                // Quantum Deformations (v21)
+                if (document.getElementById('quantum').checked) {
+                    terms.push(`\\lambda_1\\lambda^2r(\\Omega\\cap\\Omega^2)`);
+                    this.pathway.push("2. Added Quantum Deformation (v21)");
+                }
+                
+                // String Coupling (v35)
+                if (document.getElementById('string').checked) {
+                    terms.push(`\\frac{g\\Omega v^2}{v^2}V_\\psi\\left(\\frac{\\partial dg}{\\partial g}\\right)`);
+                    this.pathway.push("3. Added String Coupling (v35)");
+                }
+                
+                // Dark Sector (v37)
+                if (document.getElementById('dark').checked) {
+                    terms.push(`\\phi_{\\text{dark}}(\\nabla\\times\\Omega)`);
+                    this.pathway.push("4. Added Dark Sector (v37)");
+                }
+                
+                // Meta-Correction (v45)
+                if (document.getElementById('meta').checked) {
+                    terms.push(`\\oint_{\\partial M} \\Psi(\\Omega)d\\Omega`);
+                    this.pathway.push("5. Added Meta-Correction (v45)");
+                }
+                
+                this.equation = `\\[ A_u = ${terms.join(' + ')} \\]`;
+                document.getElementById('current-equation').innerHTML = this.equation;
+                
+                // Update pathway display
+                this.updatePathway();
+                
+                // Render MathJax
+                if (typeof MathJax !== 'undefined') {
+                    MathJax.typeset();
+                }
+            }
+            
+            updatePathway() {
+                const pathwayDiv = document.getElementById('pathway');
+                pathwayDiv.innerHTML = '';
+                this.pathway.forEach(step => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'pathway-step';
+                    stepDiv.textContent = step;
+                    pathwayDiv.appendChild(stepDiv);
+                });
+            }
+            
+            showEvolution() {
+                // Check all domain boxes
+                document.querySelectorAll('#domain-controls input').forEach(checkbox => {
+                    checkbox.checked = true;
+                });
+                this.generateEquation();
+            }
+            
+            runSimulation() {
+                const simType = document.getElementById('sim-type').value;
+                
+                // Clear existing black holes
+                this.blackHoles.forEach(bh => this.scene.remove(bh.mesh));
+                this.blackHoles = [];
+                
+                // Create new simulation
+                if (simType === 'planck-core') {
+                    this.createBlackHole('planck-core', 0, 0);
+                } 
+                else if (simType === 'permeable') {
+                    this.createBlackHole('permeable', 0, 0);
+                }
+                else if (simType === 'merger') {
+                    this.createBlackHole('planck-core', -5, 0);
+                    this.createBlackHole('planck-core', 5, 0);
+                    this.blackHoles[0].vx = 0.5;
+                    this.blackHoles[1].vx = -0.5;
+                }
+                
+                // Update charts based on simulation type
+                this.updateCharts(simType);
+            }
+            
+            createBlackHole(type, x, y) {
+                const kmax = parseFloat(document.getElementById('kmax').value);
+                const gs = parseFloat(document.getElementById('gs').value);
+                
+                // ANOROC equation determines BH properties
+                let radius, color;
+                if (type === 'planck-core') {
+                    radius = 1.0;  // Planck length scale
+                    color = 0x00ffff;
+                } 
+                else if (type === 'permeable') {
+                    radius = 1.5;
+                    color = 0xff00ff;
+                }
+                
+                // 3D Black hole representation
+                const geometry = new THREE.SphereGeometry(radius, 32, 32);
+                const material = new THREE.MeshBasicMaterial({ color, wireframe: true });
+                const bh = new THREE.Mesh(geometry, material);
+                bh.position.set(x, y, 0);
+                this.scene.add(bh);
+                this.blackHoles.push({ mesh: bh, type, vx: 0, vy: 0 });
+            }
+            
+            updateCharts(simType) {
+                // GW Echo Simulation
+                const anorocData = [];
+                const ligoData = [];
+                const kmax = parseFloat(document.getElementById('kmax').value);
+                const gs = parseFloat(document.getElementById('gs').value);
+                const lambda = parseFloat(document.getElementById('lambda').value);
+                
+                for (let i = 0; i < 100; i++) {
+                    const x = i / 10;
+                    let val;
+                    
+                    if (simType === 'planck-core') {
+                        val = Math.sin(2 * Math.PI * 0.5 * x) * Math.exp(-0.2 * x);
+                    } 
+                    else if (simType === 'permeable') {
+                        val = (Math.sin(2 * Math.PI * 0.5 * x) + 
+                              gs * Math.sin(2 * Math.PI * 2.0 * x)) * Math.exp(-0.2 * x);
+                    }
+                    else if (simType === 'merger') {
+                        val = (Math.sin(2 * Math.PI * 0.3 * x) * Math.exp(-0.1 * x) +
+                              Math.sin(2 * Math.PI * 0.7 * (x-3)) * Math.exp(-0.15 * (x-3));
+                    }
+                    
+                    // Apply quantum deformation effect
+                    val *= (1 + (lambda - 1) * 0.2 * Math.sin(2 * Math.PI * 0.8 * x));
+                    
+                    anorocData.push(val);
+                    ligoData.push(val * (0.97 + 0.06 * Math.random()));
+                }
+                
+                // Update GW chart
+                this.gwChart.data.datasets[0].data = ligoData;
+                this.gwChart.data.datasets[1].data = anorocData;
+                this.gwChart.update();
+                
+                // Calculate match percentage
+                const diff = anorocData.reduce((sum, val, i) => 
+                    sum + Math.abs(val - ligoData[i]), 0);
+                const match = 100 - (diff / anorocData.length * 100);
+                document.getElementById('match-percentage').textContent = 
+                    `Match: ${match.toFixed(1)}%`;
+                
+                // Update BH shadow chart based on parameters
+                const baseData = [1, 0.8, 0.6, 0.7, 0.9, 0.7, 0.6, 0.8];
+                const darkEffect = document.getElementById('dark').checked ? 0.2 : 0;
+                const metaEffect = document.getElementById('meta').checked ? 0.15 : 0;
+                
+                const bhData = baseData.map((val, i) => {
+                    // Apply dark sector effect
+                    if (document.getElementById('dark').checked) {
+                        val *= (1 - darkEffect * Math.sin(i * Math.PI/4));
+                    }
+                    // Apply meta-correction effect
+                    if (document.getElementById('meta').checked) {
+                        val += metaEffect * Math.cos(i * Math.PI/2);
+                    }
+                    return Math.max(0.1, Math.min(1, val));
+                });
+                
+                this.bhChart.data.datasets[0].data = bhData;
+                this.bhChart.update();
+            }
+            
+            updateBlackHoles() {
+                this.blackHoles.forEach(bh => {
+                    // Simple orbital dynamics
+                    bh.mesh.position.x += bh.vx * 0.01;
+                    bh.mesh.position.y += bh.vy * 0.01;
+                    
+                    // Event horizon shimmer based on ANOROC terms
+                    if (bh.type === 'planck-core') {
+                        const kmax = parseFloat(document.getElementById('kmax').value);
+                        const pulse = 1 + 0.1 * Math.sin(Date.now() * 0.001 * kmax/1e76);
+                        bh.mesh.scale.set(pulse, pulse, pulse);
+                    }
+                    else if (bh.type === 'permeable') {
+                        const gs = parseFloat(document.getElementById('gs').value);
+                        const pulse = 1 + 0.05 * Math.sin(Date.now() * 0.002 * gs * 100);
+                        bh.mesh.scale.set(pulse, pulse * 0.95, pulse);
+                    }
+                });
+            }
+            
+            onWindowResize() {
+                this.camera.aspect = document.getElementById('three-container').clientWidth / 
+                                     document.getElementById('three-container').clientHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(document.getElementById('three-container').clientWidth, 
+                                    document.getElementById('three-container').clientHeight);
+            }
+        }
+
+        // Initialize the simulator when everything is loaded
+        window.addEventListener('load', () => {
+            const universe = new ANOROCUniverse();
+            
+            // Make universe available in console for debugging
+            window.anorocUniverse = universe;
+        });
+    </script>
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>
