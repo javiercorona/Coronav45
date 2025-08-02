@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANOROC v45 Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.js"></script>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #0f0f23;
+            color: #00ff00;
+        }
+        #equation-canvas {
+            background: black;
+            border: 1px solid #00ff00;
+            padding: 15px;
+            margin: 20px 0;
+            min-height: 100px;
+            overflow-x: auto;
+        }
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button, select {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00cc00;
+            padding: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005500;
+        }
+        .pathway {
+            border-left: 3px solid #00ff00;
+            padding-left: 15px;
+            margin: 15px 0;
+        }
+        .pathway-step {
+            margin: 5px 0;
+            padding: 3px;
+            transition: all 0.3s;
+        }
+        .pathway-step:hover {
+            background: #002200;
+        }
+        canvas {
+            background: black;
+            border: 1px solid #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <h1>ANOROC v45 Simulator</h1>
+    
+    <div class="control-panel">
+        <div>
+            <h3>Physics Domains</h3>
+            <label><input type="checkbox" id="core-gravity" checked> Core Gravity (v13)</label><br>
+            <label><input type="checkbox" id="quantum"> Quantum Deformations</label><br>
+            <label><input type="checkbox" id="string"> String Coupling</label><br>
+            <label><input type="checkbox" id="dark"> Dark Sector</label><br>
+            <label><input type="checkbox" id="meta"> Meta-Correction</label>
+        </div>
+        
+        <div>
+            <h3>Simulation</h3>
+            <select id="sim-type">
+                <option value="blackhole">Black Hole (Planck Core)</option>
+                <option value="galaxy">Galactic Rotation</option>
+                <option value="quantum">Quantum Test</option>
+            </select>
+            <button id="run-sim">Run Simulation</button>
+            <div>
+                <h4>Parameters</h4>
+                K<sub>max</sub>: <input type="range" id="kmax" min="1e70" max="1e80" step="1e70" value="1e76">
+                <span id="kmax-value">1e76 cm⁻⁴</span>
+            </div>
+        </div>
+        
+        <div>
+            <h3>Evolution Pathway</h3>
+            <button id="show-evolution">Show v45 Emergence</button>
+            <div id="pathway" class="pathway"></div>
+        </div>
+    </div>
+    
+    <div id="equation-canvas"></div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <h3>Gravitational Wave Prediction</h3>
+            <canvas id="gw-chart" width="400" height="300"></canvas>
+        </div>
+        <div>
+            <h3>Black Hole Shadow</h3>
+            <canvas id="bh-chart" width="400" height="300"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // ANOROC Equation Generator
+        class ANOROCSimulator {
+            constructor() {
+                this.equation = '';
+                this.pathway = [];
+                this.gwChart = null;
+                this.bhChart = null;
+                this.initCharts();
+            }
+            
+            initCharts() {
+                // GW Echo Chart
+                const gwCtx = document.getElementById('gw-chart').getContext('2d');
+                this.gwChart = new Chart(gwCtx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 100}, (_, i) => i/10),
+                        datasets: [{
+                            label: 'GW Echo (0.5 kHz)',
+                            borderColor: '#00ff00',
+                            data: [],
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#003300' }},
+                            x: { grid: { color: '#003300' }}
+                        }
+                    }
+                });
+                
+                // BH Shadow Chart
+                const bhCtx = document.getElementById('bh-chart').getContext('2d');
+                this.bhChart = new Chart(bhCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['0°', '45°', '90°', '135°', '180°', '225°', '270°', '315°'],
+                        datasets: [{
+                            label: 'Intensity',
+                            backgroundColor: 'rgba(0,255,0,0.2)',
+                            borderColor: '#00ff00',
+                            data: [1, 0.8, 0.6, 0.7, 0.9, 0.7, 0.6, 0.8]
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: { angleLines: { color: '#003300' }, grid: { color: '#003300' }}
+                        }
+                    }
+                });
+            }
+            
+            generateEquation() {
+                let terms = [];
+                this.pathway = [];
+                
+                // Core Gravity (v13)
+                if (document.getElementById('core-gravity').checked) {
+                    const kmax = document.getElementById('kmax').value;
+                    terms.push(`(1 - e^{-K/${kmax}})G_{μν} + β(δA/δg)`);
+                    this.pathway.push("1. Added Core Gravity (v13 legacy)");
+                }
+                
+                // Quantum Terms
+                if (document.getElementById('quantum').checked) {
+                    terms.push("λ₁Tr(Ω¹∘Ω⁻¹)");
+                    this.pathway.push("2. Added Quantum Deformation (v21)");
+                }
+                
+                // String Terms
+                if (document.getElementById('string').checked) {
+                    terms.push("gₛ²ℓₛ²V_{μν}^{(string)}");
+                    this.pathway.push("3. Added String Coupling (v33)");
+                }
+                
+                // Meta-Correction
+                if (document.getElementById('meta').checked) {
+                    terms.push("∮(δA/δg)⋆dg");
+                    this.pathway.push("4. Added Meta-Learning Term (v45)");
+                }
+                
+                this.equation = `\\[ A_{μν} = ${terms.join(' + ')} \\]`;
+                document.getElementById('equation-canvas').innerHTML = this.equation;
+                renderMathInElement(document.getElementById('equation-canvas'), {
+                    delimiters: [
+                        {left: '\\[', right: '\\]', display: true}
+                    ]
+                });
+                
+                this.updatePathway();
+            }
+            
+            updatePathway() {
+                const pathwayDiv = document.getElementById('pathway');
+                pathwayDiv.innerHTML = '';
+                this.pathway.forEach(step => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'pathway-step';
+                    stepDiv.textContent = step;
+                    pathwayDiv.appendChild(stepDiv);
+                });
+            }
+            
+            runSimulation() {
+                const simType = document.getElementById('sim-type').value;
+                
+                // GW Echo Simulation
+                if (simType === 'blackhole') {
+                    const freqData = Array.from({length: 100}, (_, i) => {
+                        const x = i/10;
+                        return Math.exp(-Math.pow(x-5, 2)) * Math.sin(2 * Math.PI * 0.5 * x);
+                    });
+                    this.gwChart.data.datasets[0].data = freqData;
+                    this.gwChart.update();
+                    
+                    // BH Shadow Simulation
+                    const bhData = [1, 0.7, 0.4, 0.6, 0.9, 0.6, 0.4, 0.7];
+                    this.bhChart.data.datasets[0].data = bhData;
+                    this.bhChart.update();
+                }
+                
+                // Galactic Rotation Curve
+                else if (simType === 'galaxy') {
+                    // ... galaxy simulation code ...
+                }
+            }
+        }
+
+        // Initialize
+        const simulator = new ANOROCSimulator();
+        
+        // Event Listeners
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', () => simulator.generateEquation());
+        });
+        
+        document.getElementById('kmax').addEventListener('input', function() {
+            document.getElementById('kmax-value').textContent = this.value + ' cm⁻⁴';
+            simulator.generateEquation();
+        });
+        
+        document.getElementById('run-sim').addEventListener('click', () => simulator.runSimulation());
+        document.getElementById('show-evolution').addEventListener('click', () => {
+            document.getElementById('core-gravity').checked = true;
+            document.getElementById('quantum').checked = true;
+            document.getElementById('string').checked = true;
+            document.getElementById('meta').checked = true;
+            simulator.generateEquation();
+        });
+        
+        // Initial render
+        simulator.generateEquation();
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+</html>
