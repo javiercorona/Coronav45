@@ -1,0 +1,6 @@
+\begin{aligned}
+\mathbb{A}_{\mu\nu}^{(t+1)} = &\underbrace{\alpha\left(\mathbb{A}_{\mu\nu}^{(t)} - \langle\mathbb{A}_{\mu\nu}^{\text{past}}\rangle\right)}_{\text{Meta-Causality}} \\
+&+ \underbrace{\lambda\int_\Sigma \psi_i\bar{\psi}_j\text{Tr}(\gamma^\mu\gamma^\nu)d\Sigma}_{\text{Entanglement Curvature}} \\
+&+ \underbrace{\text{LSTM}_\theta(g_{\mu\nu}^{(t)},T_{\mu\nu}^{(t)})}_{\text{Self-Predictive Term}} \\
+&+ \underbrace{\zeta D_{\mu\nu}^{(t)}}_{\text{Legacy Debris}}
+\end{aligned}
