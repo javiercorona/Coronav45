@@ -1,6 +1,10 @@
 ANOROC v45: Unified Quantum-Gravitational Framework
 ![image](https://github.com/user-attachments/assets/ef7f0814-f5fd-4efd-b27c-ed02979ce494)
 
+             v45.1
+
+![Uploading image.jpeg…]()
+
               v46
 ![image](https://github.com/user-attachments/assets/ac8c0b93-c455-4213-ba37-0a0e8d38892b)
 
