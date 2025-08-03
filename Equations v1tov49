@@ -103,4 +103,17 @@ T_{\mu\nu}^{(\text{debris})} = \rho u_\mu u_\nu + \Pi_{\mu\nu} + \delta T_{\mu\n
         v49 – Recursive Octonionic Geometry with Observer-Encoded Repair
 \mathbb{G}{\mu\nu} = A{\mu\nu}[\Gamma] + \sum_{k=1}^D \omega_k \otimes \text{Tr}(\Omega^k \circ \Omega^{-k}) + \iint_\Sigma \frac{\delta \mathbb{G}}{\delta \Gamma} \diamond d\Gamma = \Xi
 
+                   anoroc  v50 
+
+\[
+\boxed{
+\begin{aligned}
+\mathbb{G}_{\mu\nu}^{(\text{Post-Merge})} &= \underbrace{\mathbb{G}_{\mu\nu}^{(\text{Observer})}}_{\text{Feedback}} + \Delta g_{\mu\nu}^{(\text{merge})} + \angle holo + I_{\mu\nu}^{(\text{debris})} \\
+&= \int \Sigma \Big[ \mathcal{O}^\mu \otimes \mathcal{O}^\nu \cdot \sum_\gamma \big( \mathcal{W}[\gamma] S(\gamma) \delta_\Gamma \mathbb{G}_{\mu\nu} \big) \Big] \diamond d\Gamma \\
+&\quad + \int_{\mathcal{B}} SGW(x) W_{\mu\nu}(x) \, d^4x \\
+&\quad + \sum_{\gamma \in \pi_1(\Sigma)} S(\gamma) \cdot W[\gamma] \cdot \delta G \\
+&\quad + \rho u_\mu u_\nu + \Pi_{\mu\nu} + \delta I_{\mu\nu}^{(\text{jets})}
+\end{aligned}
+}
+\]
 
