@@ -86,9 +86,15 @@ pdflatex ANOROC_v45.tex
 
 
 
-ANOROC vΩ – Observer-Recursive Integral Field Equation
+ANOROC vΩ – Observer-Recursive Integral Field Equation Anoroc v49
 
 ![image](https://github.com/user-attachments/assets/ee04098f-7b14-4774-84cf-765a06404d9d)
+
+                  anoroc v50
+
+![image](https://github.com/user-attachments/assets/b385f5c1-bd09-405f-9077-a898f0968920)
+
+                  
 
 Term
 Meaning
