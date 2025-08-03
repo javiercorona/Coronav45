@@ -89,7 +89,15 @@ g_{\mu\nu} \rightarrow g_{\mu\nu} + \Phi_{\text{BH}}^{\text{spin}} \cdot T^{\tex
 G_{\mu\nu} + \sum_{i} f_i(K) H^{(i)}{\mu\nu} = \kappa T{\mu\nu}
 	45.	Final String-Corrected Geometry
 G_{\mu\nu} + f(K)H_{\mu\nu} + \mathcal{C}\mathcal{V}{\mu\nu} = \kappa f(K) T^{(\text{eff})}{\mu\nu}
+        v45.1 – Black Hole Merger Feedback Geometry
+\Delta g_{\mu\nu}^{(\text{merge})} = \int_{\mathcal{B}} \mathcal{S}{\text{GW}}(x) \cdot W{\mu\nu}(x) \, d^4x
+
 	46.	ANOROC v46 (BH as Spin Magnet)
 \Phi_{\text{BH}}^{\text{mag}} \sim \nabla^2 g_{\mu\nu}
+      v46.1 – Debris Tensor Evolution (Post-collapse Cloud)
+T_{\mu\nu}^{(\text{debris})} = \rho u_\mu u_\nu + \Pi_{\mu\nu} + \delta T_{\mu\nu}^{(\text{jets})}
 	47.	ANOROC v47 (QEC + Holography Unification)
 \mathbb{M}{\mu\nu}^{(t+1)} = \mathcal{R}{\text{QECC}}(\text{loops}, \mathbb{G}, H(\mathbb{M}))
+        v47.1 – Loop-Entropy-Holography Coupler
+\mathcal{L}{\text{holo}} = \sum{\gamma \in \pi_1(\Sigma)} S(\gamma) \cdot \mathcal{W}[\gamma] \cdot \delta \mathbb{G}
+
