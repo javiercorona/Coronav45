@@ -17,6 +17,9 @@ ANOROC v45: Unified Quantum-Gravitational Framework
 
   ![image](https://github.com/user-attachments/assets/d7b9ae20-fe32-4a9f-bd17-c2494f21fae1)
 
+                v47.1
+                
+![image](https://github.com/user-attachments/assets/4a9ff339-b60b-4065-b0e6-54461f263467)
 
  
 *Axiomatic Non-local Omnidimensional Ricci-based Open/Closed Cosmology*
