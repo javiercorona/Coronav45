@@ -96,18 +96,4 @@ ANOROC vΩ – Observer-Recursive Integral Field Equation Anoroc v49
 
                   
 
-Term
-Meaning
-\sigma^\mu \otimes \sigma^\nu
-Observer’s directional perception frame (tensor product of local observables)
-\sum_{\gamma}
-Sum over loops or homotopy classes of paths through observer space
-\mathcal{W}[\gamma]
-Wilson loop / transport operator along loop \gamma — encodes memory or interaction history
-S(\gamma)
-Entropy weighting of the path \gamma — higher for more informational loops
-\delta_{\Gamma} \mathbb{G}_{\mu\nu}
-Variation of the geometric field w.r.t. observer topology \Gamma — “How geometry changes per observer’s configuration”
-\diamond d\Gamma
-Integration over observer-induced topology space — perhaps quantum-variational space
 
